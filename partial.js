@@ -168,10 +168,7 @@
     return function() { return go_async(ithis(this, arguments), to_mr(arguments), fs, 0); }
   };
   _.cb = _.callback = function(f) {
-    return __.async.apply(null, map(arguments, function(f) {
-      f._p_cb = true;
-      return f;
-    }));
+    return __.async.apply(null, map(arguments, function(f) { return f._p_cb = true, f; }));
   };
   _.boomerang = function() {
     var fs = arguments;
@@ -373,11 +370,12 @@
     for (var i = 0; i < length; i++) values[i] = obj[keys[i]];
     return values;
   };
-  _.toArray = _.to_array = _.toArray = function(obj) {
+  _.toArray = _.to_array = function(obj) {
     if (!obj) return [];
     return _.isArrayLike(obj) ? slice.call(obj) : _.values(obj);
   };
-  _.keyval = _.obj = _.object = function(list, values) {
+  _.keyval = _.obj = _.object = function f(list, values) {
+    if (arguments.length == 1) return _(f, list);
     if (_.isString(list)) {
       var obj = {};
       obj[list] = values;
@@ -559,17 +557,12 @@
       case '[object RegExp]':
       // RegExps are coerced to strings for comparison (Note: '' + /a/i === '/a/i')
       case '[object String]':
-        // Primitives and their corresponding object wrappers are equivalent; thus, `"5"` is
-        // equivalent to `new String("5")`.
         return '' + a === '' + b;
       case '[object Number]':
         if (+a !== +a) return +b !== +b;
         return +a === 0 ? 1 / +a === 1 / b : +a === +b;
       case '[object Date]':
       case '[object Boolean]':
-        // Coerce dates and booleans to numeric primitive values. Dates are compared by their
-        // millisecond representations. Note that invalid dates with millisecond representations
-        // of `NaN` are not equivalent.
         return +a === +b;
     }
 
@@ -1440,10 +1433,13 @@
     return source.replace(/\/\*(.*?)\*\//g, "").replace(REG2, "");
   }
   function s_exec(re, wrap, source, args, self) {
-    return _.go(_.mr(source.split(re),
-      _.map(self.matcher[re], function(func) {
-        return _.go(func.apply(null, args), wrap, return_check);
-      })),
+    var has_p = false;
+    var vs = _.map(self.matcher[re], function(func) {
+      var v = _.go(func.apply(null, args), wrap, return_check);
+      if (maybe_promise(v)) has_p = true;
+      return v;
+    });
+    return _.go(_.mr(source.split(re), has_p ? _.map(vs, _.async(_.idtt)) : vs),
       function(s, vs) { return _.mr(map(vs, function(v, i) { return s[i] + v; }).join("") + s[s.length-1], args, self); });
   }
   function convert_to_html(source) {
@@ -1478,7 +1474,7 @@
   }
   function push_in(ary, index, data) {
     var rest_ary = ary.splice(index);
-    ary.push(data)
+    ary.push(data);
     return ary.concat(rest_ary);
   }
   function start_tag(str, tag_stack, attrs, name, cls) {
