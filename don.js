@@ -1,13 +1,18 @@
-!function(window) {
+// Don.js 1.0.0
+// Selectors - Piljung Park, Byeongjin Kim
+// Manipulation - Joeun Ha, Jeongik Park
+// Event, Fetch - Indong Yoo
+// (c) 2017 Marpple. MIT Licensed.
+!function (window) {
   var doc = window.document
     , doc_el = doc.documentElement
     , slice = Array.prototype.slice
     , push = Array.prototype.push
-    , don_uid = function(id) {
-    return function() {
-      return 'don_js_' + '_' + id++;
-    };
-  }(0);
+    , don_uid = function (id) {
+      return function () {
+        return 'don_js_' + '_' + id++;
+      };
+    }(0);
 
   // simple partial.js
   var ___ = {};
@@ -21,7 +26,7 @@
       else if (i < ___idx) parts1.push(parts[i]);
       else parts2.push(parts[i]);
 
-    return function() {
+    return function () {
       var args1 = parts1.slice(), args2 = parts2.slice(),
         rest = slice.call(arguments);
 
@@ -65,7 +70,7 @@
     return obj;
   }
   function _eachr(arr, iter) {
-    for (var i = _length(arr)-1; i > -1; i--) iter(arr[i], i);
+    for (var i = _length(arr) - 1; i > -1; i--) iter(arr[i], i);
     return arr;
   }
   function _map(arr, iter) {
@@ -73,7 +78,7 @@
     return res;
   }
   function _mapr(arr, iter) {
-    for (var res = [], i = _length(arr)-1; i > -1; i--) res[i] = iter(arr[i], i);
+    for (var res = [], i = _length(arr) - 1; i > -1; i--) res[i] = iter(arr[i], i);
     return res;
   }
   function _find(arr, predi) {
@@ -88,9 +93,9 @@
     return arr && arr.indexOf(value) != -1;
   }
   function _flat(new_arr, arr, noDeep, start) {
-    _each(arr, function(v) {
+    _each(arr, function (v) {
       if (!_like_arr(v) || (!Array.isArray(v) && !(!!(v && v.callee)))) return new_arr.push(v);
-      noDeep ? _each(v, function(v) { new_arr.push(v); }) : _flat(new_arr, v, noDeep);
+      noDeep ? _each(v, function (v) { new_arr.push(v); }) : _flat(new_arr, v, noDeep);
     }, start);
     return new_arr;
   }
@@ -115,7 +120,7 @@
   }
 
   // don.js
-  !function() {
+  !function () {
     var rquick_expr = /^(?:#([\w-]+)|(\w+)|\.([\w-]+))$/;
     // combinator_expr = /^\s*[+|~]\s*/;
 
@@ -138,30 +143,20 @@
       return root;
     }
     function make_predi(selector) {
-      return selector ? function(results, el, selector) {
+      return selector ? function (results, el, selector) {
         return el && match_func(el, selector) && results.indexOf(el) == -1;
-      } : function(results, el) {
+      } : function (results, el) {
         return el && results.indexOf(el) == -1;
       };
     }
-    function make_string_selector(sel_arr, root) {
-      if (!root.nodeType) return [];
-      var i = 0, len = sel_arr.length, results, is_root_id = !!root.id;
+    function make_string_selector(sel_arr, root, __$) {
+      if (!root.nodeType) return;
+      var i = 0, len = sel_arr.length, is_root_id = !!root.id;
       if (!is_root_id) root.id = don_uid();
       for (var _sel_arr = []; i < len;) _sel_arr.push('#' + root.id + ' ' + sel_arr[i++]);
-      results = _$(_sel_arr.join(','), root.parentNode || doc, true);
+      return __$(_sel_arr.join(','), root.parentNode || doc, true);
       // if (!is_root_id) root.removeAttribute('id'); 그냥 id없으면 id강제로 넣어버려
-      return results;
-    }
-
-    function make_string_selector2(sel_arr, root) {
-      if (!root.nodeType) return [];
-      var i = 0, len = sel_arr.length, results, is_root_id = !!root.id;
-      if (!is_root_id) root.id = don_uid();
-      for (var _sel_arr = []; i < len;) _sel_arr.push('#' + root.id + ' ' + sel_arr[i++]);
-      results = _$1(_sel_arr.join(','), root.parentNode || doc, true);
-      // if (!is_root_id) root.removeAttribute('id'); 그냥 id없으면 id강제로 넣어버려
-      return results;
+      // return results;
     }
 
     var filter_or_not = function f(els, selector, func) {
@@ -178,10 +173,10 @@
       if (!_like_arr(els)) return el_return_match(els[p_or_n], selector);
       var predi = make_predi(selector);
       for (var i = 0, results = [], len = els.length, _el, el; i < len; i++)
-        if ((_el = els[i]) && predi(results, (el=_el[p_or_n]), selector)) results.push(el);
+        if ((_el = els[i]) && predi(results, (el = _el[p_or_n]), selector)) results.push(el);
       return results;
     };
-    var until = function(els, selector, funcA, funcB) {
+    var until = function (els, selector, funcA, funcB) {
       if (typeof els == 'string') return _(f, _, els, funcA, funcB);
       if (els == null) return;
       if (!_like_arr(els)) els = [els];
@@ -189,14 +184,14 @@
       var results = [], el, parents = [];
       do {
         els = funcB(els);
-        for(var i=0, len=els.length;i<len;i++)
+        for (var i = 0, len = els.length; i < len; i++)
           if ((el = els[i]) && not_match_func(el, selector) && results.indexOf(el) == -1) {
             results.push(el);
             parents.push(el);
           }
         els = parents;
         parents = [];
-      } while(len);
+      } while (len);
       return results;
     };
     $.children = function f(els, selector) {
@@ -217,20 +212,28 @@
         if ((_el = els[i]) && (el = _el.closest(selector)) && results.indexOf(el) == -1) results.push(el);
       return results;
     };
+    $.closest2 = function f(els, selector) {
+      if (arguments.length == 1) return _(f, _, els);
+      if (els == null) return;
+      if (!_like_arr(els)) return match_func(els, selector) ? els : $.find1(els, selector);
+      for (var i = 0, results = [], len = els.length, _el, el; i < len; i++)
+        if ((_el = els[i]) && (el = match_func(_el, selector) ? _el : $.find1(_el, selector)) && results.indexOf(el) == -1) results.push(el);
+      return results;
+    };
     $.contains = doc_el.contains ?
-      function(parent, node) {
+      function (parent, node) {
         var _parent = parent.nodeType === 9 ? parent.documentElement : parent,
           _node = node && node.parentNode;
-        return parent === _node || !!( _node && _node.nodeType === 1 && (
-            _parent.contains ? _parent.contains( _node ) :
-              parent.compareDocumentPosition && parent.compareDocumentPosition( _node ) & 16
-          ));
+        return parent === _node || !!(_node && _node.nodeType === 1 && (
+          _parent.contains ? _parent.contains(_node) :
+            parent.compareDocumentPosition && parent.compareDocumentPosition(_node) & 16
+        ));
       } :
-      function(parent, node) {
+      function (parent, node) {
         while (node && (node = node.parentNode)) if (node === parent) return true;
         return false;
       };
-    $.contents = function(els) {
+    $.contents = function (els) {
       if (els == null) return;
       if (!_like_arr(els)) els = [els];
       for (var i = 0, results = [], len = els.length, child_nodes, _el; i < len; i++)
@@ -246,17 +249,16 @@
       if (!_like_arr(els)) els = [els];
       return els[idx];
     };
-    $.filter = _(filter_or_not, _, _ , match_func);
+    $.filter = _(filter_or_not, _, _, match_func);
     $.find = function f(parent_els, selector) {
       if (arguments.length == 1 && (typeof parent_els == 'string')) return _(f, _, parent_els);
       if (parent_els == null) return;
       if (!_like_arr(parent_els)) parent_els = [parent_els];
       var p_els_len = _length(parent_els),
         selector_is_string = typeof selector == 'string',
-        selector_split = selector_is_string && selector.split(','),
-        selector_func =  selector_is_string ? function(root) {
-          return make_string_selector(selector_split, root);
-        } : function(root) {
+        selector_func = selector_is_string ? function (root) {
+          return make_string_selector(selector.split(','), root, _$) || [];
+        } : function (root) {
           return _$(selector, root);
         };
       for (var i = 0, results = []; i < p_els_len; i++)
@@ -269,10 +271,9 @@
       if (parent_els == null) return;
       if (_like_arr(parent_els)) parent_els = parent_els[0];
       var selector_is_string = typeof selector == 'string',
-        selector_split = selector_is_string && selector.split(','),
-        selector_func =  selector_is_string ? function(root) {
-          return make_string_selector2(selector_split, root);
-        } : function(root) {
+        selector_func = selector_is_string ? function (root) {
+          return make_string_selector(selector.split(','), root, _$1);
+        } : function (root) {
           return _$1(selector, root);
         };
       return selector_func(define_root(parent_els));
@@ -302,7 +303,7 @@
       return typeof els == 'string' ? _(f, _, els) : $.find(els, '~' + (selector || '*'));
     };
     $.next_until = $.nextUntil = _(until, _, _, $.nextAll, $.next);
-    $.not = _(filter_or_not, _, _ , not_match_func);
+    $.not = _(filter_or_not, _, _, not_match_func);
     $.parent = function f(els, selector) {
       if (typeof els == 'string') return _(f, _, els);
       if (els == null) return;
@@ -346,9 +347,9 @@
       if (els == null) return;
       if (!_like_arr(els)) els = [els];
       var predi = make_predi(selector);
-      for(var i=0,results = [],len=els.length, _el, parent;i<len;i++)
+      for (var i = 0, results = [], len = els.length, _el, parent; i < len; i++)
         if ((_el = els[i]) && (parent = _el.parentNode))
-          for(var j=0, children=parent.children, len2 = children.length, el; j<len2;j++)
+          for (var j = 0, children = parent.children, len2 = children.length, el; j < len2; j++)
             if (predi(results, (el = children[j]), selector) && el != _el) results.push(el);
       return results;
     };
@@ -372,18 +373,18 @@
         else
           return _push_apply(root.querySelectorAll(selector), results);
       else if (_is_node(selector))
-        return _is_node(root) && $.contains(root, selector) ? results.push(selector) : results;
+        return _is_node(root) && $.contains(root, selector) ? _push_apply(selector, results) : results;
       else if (!selector_is_string && _like_arr(selector))
-      // return _push_apply(selector, results);
+        // return _push_apply(selector, results);
         if (!_is_node(root)) return _push_apply(selector, results);
-        else for (var i=0, el, len=selector.length;i<len;i++)
-          if ($.contains(root, (el=selector[i]))) results.push(el);
+        else for (var i = 0, el, len = selector.length; i < len; i++)
+          if ($.contains(root, (el = selector[i]))) results.push(el);
       return results;
     }
 
     function _$1(selector, root, _selector_is_string) {
       var m, match, doc_or_frag, selector_is_string = _selector_is_string || typeof selector == 'string';
-      if (!root || !selector || (selector_is_string && !selector.trim())) return ;
+      if (!root || !selector || (selector_is_string && !selector.trim())) return;
       else if (selector_is_string)
         if (!(match = rquick_expr.exec(selector)))
           return root.querySelector(selector) || undefined;
@@ -414,12 +415,12 @@
     }
 
     var _cache = {};
-    var $_keys = Object.keys($), ki=0;
-    while(ki < $_keys.length) _cache[$_keys[ki++]] = {};
+    var $_keys = Object.keys($), ki = 0;
+    while (ki < $_keys.length) _cache[$_keys[ki++]] = {};
   }();
 
   // don.manipulation.js
-  !function($) {
+  !function ($) {
     function _is_win(obj) { return obj != null && obj == obj.window; }
     function _is_win_el_or_els(els) { return _is_win(els) || _is_win(els[0]) }
     function _get_win(els) { return _is_win_el_or_els(els) ? window : _check_doc(els) ? window : false; }
@@ -427,8 +428,8 @@
     function _check_doc(els) { return _is_document(els) || _is_document(els[0]) }
     function _is_el_or_els(els) { return els !== undefined && (_is_node(els) || (Array.isArray(els) && (!els.length || _is_node(els[0])))); }
 
-    function _check_boxSizing (el) { return $.css(el, 'boxSizing') == 'border-box'; }
-    function _display_is_none (el) { return $.css(el, 'display') == 'none'; }
+    function _check_boxSizing(el) { return $.css(el, 'boxSizing') == 'border-box'; }
+    function _display_is_none(el) { return $.css(el, 'display') == 'none'; }
     function _is_node_name(el, name) { return el && el.nodeName && el.nodeName.toLowerCase() === name.toLowerCase(); }
     function _parse_float_only_numeric(n) { return _is_numeric(n) ? parseFloat(n) : n; }
 
@@ -438,7 +439,7 @@
       function editor(el, i) {
         var val = _is_fn(class_name) ? class_name(i, el) : class_name;
         if (val)
-          if (/\s/.test(val)) _each(val.split(" "), function(v) { el.classList[method](v); });
+          if (/\s/.test(val)) _each(val.split(" "), function (v) { v && el.classList[method](v); });
           else el.classList[method](val);
         return el;
       }
@@ -457,10 +458,10 @@
     };
 
     $.attr = function f(els, attr_name, attr_value) {
+      if (els == null) return;
       if (!_is_el_or_els(els))
         if (arguments.length == 1) return _(f, _, els);
         else if (arguments.length == 2) return _(f, _, els, attr_name);
-      if (els == null) return;
 
       if (_is_fn(attr_value)) {
         function exec_fn(el, i) { return f(el, attr_name, attr_value(i, el.getAttribute(attr_name), el)) }
@@ -468,7 +469,7 @@
       }
 
       if (arguments.length == 2 && _is_str(attr_name)) {
-        var get_iter = function(el) {
+        var get_iter = function (el) {
           var value = el.getAttribute(attr_name);
           if (value == undefined) return;
           if (_is_numeric(value)) return parseFloat(value);
@@ -480,7 +481,7 @@
         return _like_arr(els) ? _map(els, get_iter) : get_iter(els);
       }
 
-      if (attr_name.constructor == Object) return _each2(attr_name, function(v, k) { f(els, k, v) }), els;
+      if (attr_name.constructor == Object) return _each2(attr_name, function (v, k) { f(els, k, v) }), els;
       if (attr_value === undefined) return els;
       if (attr_value === null) return $.remove_attr(els, attr_name);
 
@@ -511,6 +512,12 @@
       "zoom": true
     };
 
+    function toCamel(str) {
+      return str.replace(/-([a-z])/g, function (all, letter) {
+        return letter.toUpperCase();
+      });
+    }
+
     function check_css_num(value, p_name) {
       if (_is_numeric(value)) return css_number[p_name] ? value : value + "px";
       return value;
@@ -524,15 +531,21 @@
 
       if (arguments.length == 2 && prop_name.length != null) {
         var get_iter = Array.isArray(prop_name) ?
-          function(el) { return prop_name.reduce(function(o, p) { o[p] = el.ownerDocument.defaultView.getComputedStyle(el, null)[p]; return o; }, {}) } :
-          function(el) { return el.ownerDocument.defaultView.getComputedStyle(el, null)[prop_name]; };
+          function (el) { return prop_name.reduce(function (o, p) { p = toCamel(p); o[p] = el.ownerDocument.defaultView.getComputedStyle(el, null)[p]; return o; }, {}) } :
+          function (el) { return el.ownerDocument.defaultView.getComputedStyle(el, null)[toCamel(prop_name)]; };
         return _like_arr(els) ? _map(els, get_iter) : get_iter(els);
       }
 
-      var set_iter = _is_str(prop_name) ? function(el, i) {
+      var set_iter = _is_str(prop_name) ? function (el, i) {
         var val = _is_fn(prop_value) ? prop_value(i, el) : prop_value;
+        prop_name = toCamel(prop_name);
         el.style[prop_name] = check_css_num(val, prop_name);
-      } : function(el) { _each2(prop_name, function(attr, name) { el.style[name] = check_css_num(attr, name); }) };
+      } : function (el) {
+        _each2(prop_name, function (attr, name) {
+          name = toCamel(name);
+          el.style[name] = check_css_num(attr, name);
+        })
+      };
 
       return _like_arr(els) ? _each(els, set_iter) : set_iter(els), els;
     };
@@ -546,7 +559,12 @@
         else if (!match_sel(els)) return els;
       }
 
-      function remove_child(el) { return el.parentNode.removeChild($.off(el)) }
+      function remove_child(el) {
+        if (!el.parentNode) return;
+        el.parentNode.removeChild(el);
+        $.off($.trigger(el, 'removed'));
+        return el;
+      }
       return _like_arr(els) ? _each(els, remove_child) : remove_child(els);
     };
 
@@ -574,8 +592,8 @@
       return method(els, content);
     };
 
-    $.text = _(text_or_html, _, _, function(els) { return els.reduce(function(res, el) { return res + el.textContent; }, '') }, 'textContent');
-    $.html = _(text_or_html, _, _, function(els) { return els[0].innerHTML }, 'innerHTML');
+    $.text = _(text_or_html, _, _, function (els) { return els.reduce(function (res, el) { return res + el.textContent; }, '') }, 'textContent');
+    $.html = _(text_or_html, _, _, function (els) { return els[0].innerHTML }, 'innerHTML');
 
     $.textTo = $.text_to = _(html_to_or_text_to, _, _, $.text);
     $.htmlTo = $.html_to = _(html_to_or_text_to, _, _, $.html);
@@ -585,10 +603,16 @@
       function insert(target, elem) {
         var last = target.length - 1 || 0;
         var fns = {
-          append: function(te, i) { return te.appendChild(last == i ? elem : elem.cloneNode(true)) },
-          prepend: function(te, i) { return te.insertBefore(last == i ? elem : elem.cloneNode(true), te.firstChild) },
-          after: function(te, i) { return te.parentNode.insertBefore(last == i ? elem : elem.cloneNode(true), te.nextSibling) },
-          before: function(te, i) { return te.parentNode.insertBefore(last == i ? elem : elem.cloneNode(true), te) }
+          append: function (te, i) {
+            if (te.nodeName == 'TABLE') te = te.firstChild;
+            return te.appendChild(last == i ? elem : elem.cloneNode(true))
+          },
+          prepend: function (te, i) {
+            if (te.nodeName == 'TABLE') te = te.firstChild;
+            return te.insertBefore(last == i ? elem : elem.cloneNode(true), te.firstChild)
+          },
+          after: function (te, i) { return te.parentNode.insertBefore(last == i ? elem : elem.cloneNode(true), te.nextSibling) },
+          before: function (te, i) { return te.parentNode.insertBefore(last == i ? elem : elem.cloneNode(true), te) }
         };
         if (_like_arr(target))
           if (reverse) return _map(target, fns[type]);
@@ -614,27 +638,26 @@
 
         if (_is_node(elem)) return insert(target, elem);
         if (!reverse && _is_fn(elem)) {
-          var fn = elem, exec_fn = function(el, i) { return f(el, fn(i, el.innerHTML)) };
+          var fn = elem, exec_fn = function (el, i) { return f(el, fn(i, el.innerHTML)) };
           return _like_arr(target) ? _each(target, exec_fn) : exec_fn(target, 0);
         }
         if (elem == null) return reverse ? elem : target;
         if (_is_str(elem)) {
           if (/^<.*>.*/.test(elem)) {
-            var temp = doc.createElement('div');
-            temp.innerHTML = elem;
-            if (reverse) return f(_map(temp.childNodes, _idtt), target);
-            return f(target, _map(temp.childNodes, _idtt));
+            return reverse ?
+              f($.html_to_el(elem), target) :
+              f(target, $.html_to_el(elem));
           }
           if (reverse) elem = $(elem);
           else return insert(target, doc.createTextNode(elem));
         }
         if (_like_arr(elem)) {
           if (type == 'append') {
-            if (reverse) return _flatten(_map(elem, function(el) { return f(el, target) }));
-            _each(elem, function(el) { f(target, el) });
+            if (reverse) return _flatten(_map(elem, function (el) { return f(el, target) }));
+            _each(elem, function (el) { f(target, el) });
           } else {
-            if (reverse) return _flatten(_mapr(elem, function(el) { return f(el, target) }));
-            _eachr(elem, function(el) { f(target, el) });
+            if (reverse) return _flatten(_mapr(elem, function (el) { return f(el, target) }));
+            _eachr(elem, function (el) { f(target, el) });
           }
         }
         return reverse ? elem : target;
@@ -670,18 +693,21 @@
       if (is_show) {
         function fn(el) {
           if (el.style.display != 'none') {
-            if (el.hidden || el.ownerDocument.defaultView.getComputedStyle(el, null).display == 'none') el.style.display = get_default_display(el);
+            if (el.hidden || el.ownerDocument.defaultView.getComputedStyle(el, null).display == 'none') {
+              el.style.display = get_default_display(el);
+              $.trigger(el, 'show');
+            }
             return;
           }
-
-          if (el._prev_display) el.style.display = el._prev_display;
-          else el.style.display = '';
+          el.style.display = el._prev_display ? el._prev_display : get_default_display(el);
+          $.trigger(el, 'show');
         }
       } else {
         function fn(el) {
           if (el.style.display == 'none') return;
           if (el.style.display) el._prev_display = el.style.display;
           el.style.display = 'none';
+          $.trigger(el, 'hide');
         }
       }
       return _like_arr(els) ? _each(els, fn) : fn(els), els;
@@ -697,20 +723,20 @@
         $.css(el, 'display') == 'none';
     }
 
-    $.toggle = function(els, state) {
+    $.toggle = function (els, state) {
       if (els == null) return;
       if (typeof state === "boolean") { return $[state ? 'show' : 'hide'](els); }
       function change(el) { $[is_hidden_within_tree(el) ? 'show' : 'hide'](el); }
       return _like_arr(els) ? _each(els, change) : change(els), els;
     };
 
-    $.clone = function(els) {
+    $.clone = function (els) {
       if (els == null) return;
       function clone_node(el) { return el.cloneNode(true); }
       return _like_arr(els) ? _map(els, clone_node) : clone_node(els);
     };
 
-    $.empty = function(els) {
+    $.empty = function (els) {
       if (els == null) return;
       function clean(el) { el.innerHTML = '' }
       return _like_arr(els) ? _each(els, clean) : clean(els), els;
@@ -718,15 +744,14 @@
 
     function wid_hei_fn(wid_hei_type, wid_hei, window_width_type) {
       // wid_hei_type 1: outer, 2: innerWidth, 3: width
-
       function _get_doc_wid_hei(els, wid_hei) {
         var body = els.body || els[0].body;
-        return wid_hei == "width" ? Math.max( body.offsetWidth, body.scrollWidth, doc_el.offsetWidth, doc_el.offsetWidth, doc_el.clientWidth )
-          : Math.max( body.offsetHeight, body.scrollHeight, doc_el.offsetHeight, doc_el.offsetHeight, doc_el.clientHeight )
+        return wid_hei == "width" ? Math.max(body.offsetWidth, body.scrollWidth, doc_el.offsetWidth, doc_el.offsetWidth, doc_el.clientWidth)
+          : Math.max(body.offsetHeight, body.scrollHeight, doc_el.offsetHeight, doc_el.offsetHeight, doc_el.clientHeight)
       }
 
-      function get_wid_hei_val (wid_hei_get, wid_hei_inner_outer, wid_hei, outer_margin_bool) {
-        return function(el) {
+      function get_wid_hei_val(wid_hei_get, wid_hei_inner_outer, wid_hei, outer_margin_bool) {
+        return function (el) {
           var left_top, right_bottom;
           if (wid_hei == "width") {
             left_top = "Left";
@@ -735,7 +760,6 @@
             left_top = "Top";
             right_bottom = "Bottom";
           }
-
           var styles = window.getComputedStyle(el),
             width = _display_is_none(el) ? parseFloat(styles.width) : el.getBoundingClientRect()[wid_hei],
             borderLeft_Top = parseFloat(styles["border" + left_top + "Width"]),
@@ -749,7 +773,7 @@
               var marginLeft_Top = parseFloat(styles["margin" + left_top]);
               var marginRight_Bottom = parseFloat(styles["margin" + right_bottom]);
               res = !wid_hei_get ? _check_boxSizing(el) ? 0 : - (paddingLeft_Top + paddingRight_Bottom + borderLeft_Top + borderRight_Bottom)
-                : outer_margin_bool ? ( width + marginLeft_Top + marginRight_Bottom ) : ( width );
+                : outer_margin_bool ? (width + marginLeft_Top + marginRight_Bottom) : (width);
               break;
             case 2:
               res = wid_hei_get ? (width - borderLeft_Top - borderRight_Bottom)
@@ -767,29 +791,29 @@
 
       return function f(els, value) {
         if (els == null) return;
-        if (!_is_el_or_els(els) && !_is_win_el_or_els(els) && !_check_doc(els) && els.length !=0) return _(f, _, els);
+        if (!_is_el_or_els(els) && !_is_win_el_or_els(els) && !_check_doc(els) && els.length != 0) return _(f, _, els);
 
         var get_wid_hei = get_wid_hei_val(true, wid_hei_type, wid_hei, value);
 
         if (arguments.length == 1 || value == true) {
-          if(_is_win_el_or_els(els))
-            return _like_arr(els) ? _map(els, function(v) { return v[window_width_type] }) : els[window_width_type];
+          if (_is_win_el_or_els(els))
+            return _like_arr(els) ? _map(els, function (v) { return v[window_width_type] }) : els[window_width_type];
           if (_check_doc(els)) return _get_doc_wid_hei(els, wid_hei);
           return _like_arr(els) ? _map(els, get_wid_hei) : get_wid_hei(els);
         }
 
-        function cal_width (el, value) {
+        function cal_width(el, value) {
           var res_val = get_wid_hei_val(false, wid_hei_type, wid_hei)(el) + parseFloat(value);
           var res = res_val < 0 ? 0 : res_val;
           el.style[wid_hei] = res + "px"
         }
 
         var set_width = _is_fn(value) ?
-          function(el,i) {
+          function (el, i) {
             var val = value(i, get_wid_hei(el), el);
             if (val) cal_width(el, val)
           } :
-          function(el) { cal_width(el, value) };
+          function (el) { cal_width(el, value) };
 
         return _like_arr(els) ? _each(els, set_width) : set_width(els), els;
       }
@@ -807,7 +831,7 @@
       if (els == null) return;
       function offsetParent_iter(el) {
         var offsetParent = el.offsetParent;
-        while (offsetParent && $.css( offsetParent, "position" ) === "static") {
+        while (offsetParent && $.css(offsetParent, "position") === "static") {
           offsetParent = offsetParent.offsetParent;
         }
         return offsetParent || doc_el;
@@ -821,7 +845,7 @@
       function position_iter(el) {
         var offsetParent, offset, parentOffset = { top: 0, left: 0 };
 
-        if ($.css( el, "position" ) === "fixed") {
+        if ($.css(el, "position") === "fixed") {
           offset = el.getBoundingClientRect();
         } else {
           offsetParent = $.offsetParent(el);
@@ -920,7 +944,7 @@
         return _like_arr(els) ? _map(els, get_iter) : get_iter(els);
       }
 
-      function set_iter(el, i){
+      function set_iter(el, i) {
         if (_is_fn(value)) return f(el, value(i, f(el), el));
 
         var val = value;
@@ -931,13 +955,13 @@
         }
 
         if ((el.type == "radio" || el.type == "checkbox") && Array.isArray(value)) {
-          return el.checked = _is_str(_find(value, function(val) { return val == el.value }));
+          return el.checked = _is_str(_find(value, function (val) { return val == el.value }));
         } else if (_is_node_name(el, "select")) {
           if (Array.isArray(value)) {
             var list = value;
-            return _each(el.options, function(option) { option.selected = _contains(list, option.value) });
+            return _each(el.options, function (option) { option.selected = _contains(list, option.value) });
           } else {
-            return _each(el.options, function(option) { option.selected = option.value == value });
+            return _each(el.options, function (option) { option.selected = option.value == value });
           }
         }
         el.value = val;
@@ -945,14 +969,24 @@
       return _like_arr(els) ? _each(els, set_iter) : set_iter(els, 0), els;
     };
 
-    $.el = function f(html) {
-      if (!_is_str(html)) return;
-      if (/^<.*>.*/.test(html)) {
-        var div = doc.createElement('div');
-        div.innerHTML = html;
-        return _map(div.children, _idtt);
+    $.html_to_el = function (html) {
+      var els, tmp;
+      if (/^<(tr|th|td).*><\/(tr|th|td)>$/.test(html)) {
+        tmp = doc.createElement('table');
+        tmp.innerHTML = html;
+        tmp = tmp.firstChild;
+        if (RegExp.$1 != 'tr') tmp = tmp.firstChild;
+      } else {
+        tmp = doc.createElement('div');
+        tmp.innerHTML = html;
       }
-      return [doc.createElement(html)];
+      els = _map(tmp.children, _idtt);
+      return _length(els) == 1 ? els[0] : els;
+    };
+
+    $.el = function f(html) {
+      if (!_is_str(html)) return html;
+      return /^<.*>.*/.test(html) ? $.html_to_el(html) : doc.createElement(html);
     };
 
     $.frag = function f(html) {
@@ -967,30 +1001,33 @@
     };
 
     function _scroll_fn(el, val, prop, method) {
-      var top = prop == "pageYOffset" ? true : false;
-      var win = _get_win( el );
-      if (val == undefined) return win ? win[ prop ] : el[ method ];
+      var top = prop == "pageYOffset";
+      var win = _get_win(el);
+      if (val == undefined) return win ? win[prop] : el[method];
       if (win) win.scrollTo(!top ? val : win.pageXOffset, top ? val : win.pageYOffset);
       else el[method] = val;
       return el;
     }
 
-    $.scrollTop = function f(el, val) {
+    $.scrollTop = $.scroll_top = function f(el, val) {
+      if (Array.isArray(el) && el.length == 1) el = el[0];
       if (el == null || (!_is_el_or_els(el) && !_is_win_el_or_els(el))) return;
       return _scroll_fn(el, val, "pageYOffset", "scrollTop");
     };
 
-    $.scrollLeft = function f(el, val) {
+    $.scrollLeft = $.scroll_left = function f(el, val) {
+      if (Array.isArray(el) && el.length == 1) el = el[0];
       if (el == null || (!_is_el_or_els(el) && !_is_win_el_or_els(el))) return;
       return _scroll_fn(el, val, "pageXOffset", "scrollLeft");
     };
   }(D);
 
   // don.event_n_fetch.js, inspired by https://github.com/oneuijs/oui-dom-events/blob/master/build/index.js
-  !function() {
+  !function () {
     var $ = D;
 
     var handlers = {};
+    window.handlers = handlers;
     var specialEvents = {};
     specialEvents.click = specialEvents.mousedown = specialEvents.mouseup = specialEvents.mousemove = 'MouseEvents';
 
@@ -1032,7 +1069,7 @@
     }
 
     function removeEvent(el, event, selector, callback) {
-      if (_like_arr(el) && !_is_node(el) && el != el.window) return _each(el, function(el) {
+      if (_like_arr(el) && !_is_node(el) && el != el.window) return _each(el, function (el) {
         removeEvent(el, event, selector, callback);
       });
 
@@ -1046,8 +1083,9 @@
     }
 
     function makeProxy(el, callback) {
-      return function(e) {
-        e.$delegateTarget = e.$currentTarget = el;
+      return function (e) {
+        e.delegateTarget = e.currentTarget =
+          e.$delegateTarget = e.$currentTarget = el;
         if (e.isImmediatePropagationStopped()) return;
         var result = callback.call(el, e);
         if (result === false) e.preventDefault(), e.stopPropagation();
@@ -1056,11 +1094,11 @@
     }
 
     function sortDelegate(handlers, delegateTarget, target) {
-      return _filter(_map(handlers, function(handler, i) {
+      return _filter(_map(handlers, function (handler, i) {
         return {
-          el: _filter($.find(delegateTarget, handler.selector), function(el) {
+          el: _filter($.find(delegateTarget, handler.selector), function (el) {
             return el == target || $.contains(el, target);
-          }).sort(function(a, b) {
+          }).sort(function (a, b) {
             if ($.contains(b, a)) return -1;
             else if ($.contains(a, b)) return 1;
             return 0;
@@ -1068,19 +1106,19 @@
           handler: handler,
           i: i
         };
-      }), function(d) {
+      }), function (d) {
         return d.el;
-      }).sort(function(a, b) {
+      }).sort(function (a, b) {
         if ($.contains(b.el, a.el)) return -1;
         else if ($.contains(a.el, b.el)) return 1;
         return a.i < b.i ? -1 : 1;
       });
     }
 
-    function bindEvent(el, selector, event, callback, delegator, once) {
+    function bindEvent(el, selector, event, callback, delegated, once) {
       if (!el) return el;
-      if (_like_arr(el) && !_is_node(el) && el != el.window) return _each(el, function(el) {
-        bindEvent(el, selector, event, callback, delegator, once);
+      if (_like_arr(el)) return _each(el, function (el) {
+        bindEvent(el, selector, event, callback, delegated, once);
       });
 
       var id = getDtId(el);
@@ -1089,32 +1127,34 @@
       handler.callback = callback;
 
       // emulate mouseenter, mouseleave
-      if (!delegator && handler.e in hover) callback = function(e) {
+      if (!delegated && handler.e in hover) callback = function (e) {
         var related = e.relatedTarget;
         if (!related || (related !== el && !$.contains(el, related)))
           return handler.callback.apply(el, arguments);
       };
 
-      var proxy = makeProxy(el, delegator || callback);
+      var proxy = makeProxy(el, delegated ? make_delegator(el, selector, callback, handler.e in hover) : callback);
       handler.selector = selector;
-      handler.delegated = !!delegator;
-      handler.delegator = once ? delegator ? function(e) {
+      handler.delegated = delegated;
+
+      handler.delegator = once ? delegated ? function (e) {
         proxy(e);
         e.$delegate_called && $.off(el, event, selector, callback);
-      } : function(e) {
+      } : function (e) {
         $.off(el, event, callback);
         proxy(e);
       } : proxy;
 
       elHandlers.push(handler);
-      if (findHandlers(el, null, handler.e).length > 1) return el;
+      if (el["_don_event_" + realEvent(handler.e)]) return el;
 
-      el.addEventListener(realEvent(handler.e), function(e) {
+      el["_don_event_" + realEvent(handler.e)] = true;
+      el.addEventListener(realEvent(handler.e), function (e) {
         e = compatible(e);
-        _each(sortDelegate(findHandlers(el, null, handler.e, null, true), el, e.target), function(d) {
+        _each(sortDelegate(findHandlers(el, null, handler.e, null, true), el, e.target), function (d) {
           d.handler.delegator(_defaults({ originalEvent: e }, e));
         });
-        _each(findHandlers(el, null, handler.e, null, false), function(handler) {
+        _each(findHandlers(el, null, handler.e, null, false), function (handler) {
           handler.delegator(_defaults({ originalEvent: e }, e));
         });
       }, false);
@@ -1122,8 +1162,8 @@
       return el;
     }
 
-    var returnTrue = function() { return true },
-      returnFalse = function() { return false },
+    var returnTrue = function () { return true },
+      returnFalse = function () { return false },
       ignoreProperties = /^([A-Z]|returnValue$|layer[XY]$|webkitMovement[XY]$)/,
       eventMethods = {
         preventDefault: 'isDefaultPrevented',
@@ -1134,9 +1174,9 @@
     function compatible(event) {
       if (event.isDefaultPrevented) return event;
 
-      _each2(eventMethods, function(predicate, name) {
+      _each2(eventMethods, function (predicate, name) {
         var eventMethod = event[name];
-        event[name] = function() {
+        event[name] = function () {
           event[predicate] = returnTrue;
           return eventMethod && eventMethod.apply(event, arguments);
         };
@@ -1146,25 +1186,25 @@
       event.timeStamp || (event.timeStamp = Date.now());
 
       if (event.defaultPrevented !== undefined ?
-          event.defaultPrevented :
-          'returnValue' in event ?
-            event.returnValue === false :
-            event.getPreventDefault && event.getPreventDefault()) {
+        event.defaultPrevented :
+        'returnValue' in event ?
+          event.returnValue === false :
+          event.getPreventDefault && event.getPreventDefault()) {
         event.isDefaultPrevented = returnTrue;
       }
       return event;
     }
 
-    function delegator(el, selector, callback, is_hover) {
-      return function(e) {
+    function make_delegator(el, selector, callback, is_hover) {
+      return function (e) {
         if (e.isPropagationStopped()) return;
         var els = $.find(el, selector);
         var matched;
         for (var i = 0, l = els.length; i < l; i++) {
           var child = els[i];
           if (child === e.target || $.contains(child, e.target)) {
-            e.$currentTarget = matched = child;
-            e.$delegateTarget = el;
+            e.currentTarget = e.$currentTarget = matched = child;
+            e.delegateTarget = e.$delegateTarget = el;
             break;
           }
         }
@@ -1187,9 +1227,9 @@
       if (el == null) return;
       if (arguments.length == 2) return _(on, _, el, eventType);
       if (arguments.length == 3) return _is_str(el) ?
-        _(on, _, el, eventType, cb_or_sel) : bindEvent(el, null, eventType, cb_or_sel);
+        _(on, _, el, eventType, cb_or_sel) : bindEvent(el, null, eventType, cb_or_sel, false);
 
-      return bindEvent(el, cb_or_sel, eventType, callback2, delegator(el, cb_or_sel, callback2, parse(eventType).e in hover));
+      return bindEvent(el, cb_or_sel, eventType, callback2, true);
     };
 
     $.off = function off(el, eventType, callback, callback2) {
@@ -1208,17 +1248,18 @@
         _(once, _, el, eventType, cb_or_sel) :
         bindEvent(el, null, eventType, cb_or_sel, false, true);
 
-      return bindEvent(el, cb_or_sel, eventType, callback2, delegator(el, cb_or_sel, callback2, parse(eventType).e in hover), true);
+      return bindEvent(el, cb_or_sel, eventType, callback2, true, true);
     };
 
     $.trigger = function trigger(el, eventType, props) {
       if (el == null) return;
       if (arguments.length == 1) return _(trigger, _, el);
 
-      if (_like_arr(el) && !_is_node(el) && el != el.window) return _each(el, function(el) {
+      if (_like_arr(el) && !_is_node(el) && el != el.window) return _each(el, function (el) {
         triggerHandler(el, makeEvent(eventType, props));
       });
       triggerHandler(el, makeEvent(eventType, props));
+      return el;
     };
 
     function triggerHandler(el, e) {
@@ -1235,7 +1276,10 @@
     }
 
     function fetch_to_json(fetched) {
-      return fetched.then(function(res) { return res.json() });
+      return fetched.then(function (res) {
+        if (!res.ok) return Promise.reject(res);
+        return res.json();
+      });
     }
 
     function ajax_method(method, url, data) {
@@ -1246,7 +1290,7 @@
         credentials: 'same-origin'
       }));
     }
-    $.get = function(url, query_obj) {
+    $.get = function (url, query_obj) {
       return fetch_to_json(fetch(append_query(url, $.param(query_obj)), {
         headers: { "Content-Type": "application/json" },
         credentials: 'same-origin'
@@ -1256,43 +1300,51 @@
     $.put = _(ajax_method, 'PUT');
     $.delete = $.del = _(ajax_method, 'DELETE');
 
-    $.upload = function(input_or_form, opt) {
-      return new Promise(function(resolve) {
-        if (input_or_form == null) return;
+    $.upload = function (input_or_form, opt) {
+      opt = opt || {};
+      return new Promise(function (resolve, reject) {
+        if (input_or_form == null) return reject('input or form Not existed');
         if (input_or_form.nodeName == 'INPUT') {
           var formData = new FormData();
           var files = input_or_form.files;
           for (var i = 0, file; file = files[i]; ++i) formData.append(file.name, file);
         } else {
-          var formData = new FormData(input_or_form);
+          // var formData = new FormData(input_or_form);
+          var formData = input_or_form;
         }
-        var is_multiple = input_or_form.multiple;
+        var is_multiple = opt.is_multiple || input_or_form.multiple;
         var input_or_form2 = $.el(input_or_form.outerHTML);
         $.before(input_or_form, input_or_form2);
         $.remove(input_or_form);
 
-        var xhr = new XMLHttpRequest(), url = $.UPLOAD_URL || '/api/file';
+        var xhr = new XMLHttpRequest(), url = $.UPLOAD_URL || '/@api/file';
         if (opt) {
-          _each2(opt.data, function(val, key) { formData.append(key, val); });
+          _each2(opt.data, function (val, key) { formData.append(key, val); });
           url = opt.url || url;
-          if (opt.progress) xhr.upload.onprogress = function(e) {
+          if (opt.progress) xhr.upload.onprogress = function (e) {
             e.lengthComputable && opt.progress((e.loaded / e.total) * 100, e);
           };
         }
         xhr.open('POST', url, true);
-        xhr.onload = function(e) {
+        xhr.onload = function () {
           var data = JSON.parse(xhr.response);
-          return resolve(is_multiple ? data : data[0] || data);
+          return (xhr.status >= 200 && xhr.status < 300) || xhr.status == 304 ?
+            resolve(is_multiple ? data : data[0] || data) : reject(xhr);
         };
         xhr.send(formData);  // multipart/form-data
       });
     };
 
+    $.upload2 = function (input_or_form, opt) {
+      opt.is_multiple = true;
+      return $.upload(input_or_form, opt);
+    };
+
     function append_query(url, query) {
-      return query == '' ? url : (url + '&' + query).replace(/[&?]{1,2}/, '?');
+      return query ? (url + '&' + query).replace(/[&?]{1,2}/, '?') : url;
     }
 
-    $.param = function(a) {
+    $.param = function (a) {
       if (a == null) return;
       var s = [], rbracket = /\[\]$/,
         isArray = Array.isArray, add = function (k, v) {
